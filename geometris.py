@@ -13,6 +13,13 @@ circle = pygame.image.load('assets/circle.png')
 circle = pygame.transform.scale(circle, (CIRCLE_DIM, CIRCLE_DIM))
 circleRect = circle.get_rect()
 
+cyanBlock = pygame.image.load('assets/cyan.png')
+purpleBlock = pygame.image.load('assets/purple.png')
+magentaBlock = pygame.image.load('assets/magenta.png')
+orangeBlock = pygame.image.load('assets/orange.png')
+yellowBlock = pygame.image.load('assets/yellow.png')
+greenBlock = pygame.image.load('assets/green.png')
+
 BORDER = (SCREEN_DIM-CIRCLE_DIM)/2
 CENTRE = SCREEN_DIM/2
 INTERNAL_RADIUS = (CIRCLE_DIM/2)*0.88
