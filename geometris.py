@@ -67,20 +67,20 @@ def getOffset(n, dim):
 
 def renderBlocks ():
     #render bricks as matrix updates, alter scale
-    distanceFromCentre = BLOCK_OFFSET_X+MARGIN 
+    additionalOffset = 0
     for i in range(len(gameMatrix)):
         for j in range(len(gameMatrix[i])):
                 blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE))
-                blockImg = pygame.transform.rotate(blockImg, j*-6)
                 blockRect = blockImg.get_rect()
-                offsetDefaultX = CENTRE-(blockRect[2]/2)
-                offsetDefaultY = CENTRE-(blockRect[3]/2)
-                offsetX = offsetDefaultX+((CENTRE_RADIUS+MARGIN)*getOffset(j, 'x'))
-                offsetY = offsetDefaultY+((-CENTRE_RADIUS-MARGIN)*getOffset(j, 'y'))
+                blockImg = pygame.transform.rotate(blockImg, j*-6)
+                blockRectRotated = blockImg.get_rect()
+                offsetDefaultX = CENTRE-(blockRectRotated[2]/2)
+                offsetDefaultY = CENTRE-(blockRectRotated[3]/2)
+                offsetX = offsetDefaultX+((CENTRE_RADIUS+MARGIN+additionalOffset)*getOffset(j, 'x'))
+                offsetY = offsetDefaultY+((-CENTRE_RADIUS-MARGIN-additionalOffset)*getOffset(j, 'y'))
                         
                 SCREEN.blit(blockImg, (offsetX, offsetY))
-                #j=0, offsetY=i*spaceUsedByPrevImages, j=15, offsetY=0, j=7, offsetY=i*spaceUsedByPrevImages/2
-        distanceFromCentre += blockRect[3]
+        additionalOffset += blockRect[3]
 
             
 
