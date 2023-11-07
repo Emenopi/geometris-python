@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 import math
 
 pygame.init()
@@ -7,7 +8,7 @@ pygame.display.set_caption('Geometris')
 
 SCREEN_DIM = 800
 CIRCLE_DIM = SCREEN_DIM*0.85
-screen = pygame.display.set_mode((SCREEN_DIM, SCREEN_DIM))
+SCREEN = pygame.display.set_mode((SCREEN_DIM, SCREEN_DIM))
 
 circle = pygame.image.load('assets/circle.png')
 circle = pygame.transform.scale(circle, (CIRCLE_DIM, CIRCLE_DIM))
@@ -19,6 +20,10 @@ magentaBlock = pygame.image.load('assets/magenta.png')
 orangeBlock = pygame.image.load('assets/orange.png')
 yellowBlock = pygame.image.load('assets/yellow.png')
 greenBlock = pygame.image.load('assets/green.png')
+blackBlock = pygame.image.load('assets/black.png')
+BLOCK_RECT = cyanBlock.get_rect()
+
+BLOCKS = [cyanBlock, purpleBlock, magentaBlock, orangeBlock, yellowBlock, greenBlock, blackBlock]
 
 BORDER = (SCREEN_DIM-CIRCLE_DIM)/2
 CENTRE = SCREEN_DIM/2
@@ -28,18 +33,56 @@ if INTERNAL_RADIUS % 10 != 0:
     CENTRE_RADIUS += INTERNAL_RADIUS % 10
 
 def gridMatrix ():
-    #init 60x? grid, determine ? based on how many will fit in radius
     matrix = []
-    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_RADIUS)/40)
+    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_RADIUS)/40)-1
     for i in range(matrixHeight):
-        GAME_MATRIX.append([])
+        matrix.append([])
         for j in range(60):
-            GAME_MATRIX[i].append(0)
-    return matrix
+            matrix[i].append(BLOCKS[0])
+    return matrix, matrixHeight
+
+def getBrick(block):
+    blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE))
+    SCREEN.blit(blockImg, (BLOCK_OFFSET_X+CENTRE_RADIUS, BLOCK_OFFSET_Y))
+
+def fireBrick(direction, block):
+    #take index for direction
+    #iterate over loop to change value
+    getBrick(blackBlock)
+    for i in range(len(gameMatrix)):
+        gameMatrix[i][direction] = block
+        if i > 0:
+            gameMatrix[i-1][direction] = blackBlock
+        renderBlocks()
+        pygame.time.delay(100)
+
+def getOffset(n, dim):
+    num = (n*6)*(math.pi/180)
+    if dim == 'x':
+        offset = math.sin(num)
+    else:
+        offset = math.cos(num)
+    return offset
 
 
-#def playCircle ():
-    #game loop for circle tetris
+def renderBlocks ():
+    #render bricks as matrix updates, alter scale
+    distanceFromCentre = BLOCK_OFFSET_X+MARGIN 
+    for i in range(len(gameMatrix)):
+        for j in range(len(gameMatrix[i])):
+                blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE))
+                blockImg = pygame.transform.rotate(blockImg, j*-6)
+                blockRect = blockImg.get_rect()
+                offsetDefaultX = CENTRE-(blockRect[2]/2)
+                offsetDefaultY = CENTRE-(blockRect[3]/2)
+                offsetX = offsetDefaultX+((CENTRE_RADIUS+MARGIN)*getOffset(j, 'x'))
+                offsetY = offsetDefaultY+((-CENTRE_RADIUS-MARGIN)*getOffset(j, 'y'))
+                        
+                SCREEN.blit(blockImg, (offsetX, offsetY))
+                #j=0, offsetY=i*spaceUsedByPrevImages, j=15, offsetY=0, j=7, offsetY=i*spaceUsedByPrevImages/2
+        distanceFromCentre += blockRect[3]
+
+            
 
 play = True
 
@@ -50,13 +93,27 @@ while play:
         if event.type == pygame.QUIT:
 
             play = False
+    
+    SCREEN.fill((000, 000, 000))
 
-    screen.fill((000, 000, 000))
+    SCREEN.blit(circle, (BORDER, BORDER))
+    pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_RADIUS)
 
-    screen.blit(circle, (BORDER, BORDER))
-    pygame.draw.circle(screen, (195, 33, 45), (CENTRE, CENTRE), CENTRE_RADIUS)
+    gameMatrix, MATRIX_HEIGHT = gridMatrix()
+    BLOCK_MIN_SCALE = 100/MATRIX_HEIGHT/100
+    BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE)/2)
+    BLOCK_OFFSET_Y = CENTRE-CENTRE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE))
+    MARGIN = 55
+    activeBlock = BLOCKS[1]
+    #getBrick(activeBlock)
+    renderBlocks()
 
-    GAME_MATRIX = gridMatrix()
+    keys = pygame.key.get_pressed()
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            play = False
+        if event.type == KEYDOWN and event.key == K_SPACE:
+            gameMatrix[0][0] = blackBlock
 
     pygame.display.flip()
 
