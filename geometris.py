@@ -22,19 +22,16 @@ yellowBlock = pygame.image.load('assets/yellow.png')
 greenBlock = pygame.image.load('assets/green.png')
 blackBlock = pygame.image.load('assets/black.png')
 BLOCK_RECT = cyanBlock.get_rect()
-
 BLOCKS = [cyanBlock, purpleBlock, magentaBlock, orangeBlock, yellowBlock, greenBlock, blackBlock]
 
 BORDER = (SCREEN_DIM-CIRCLE_DIM)/2
 CENTRE = SCREEN_DIM/2
 INTERNAL_RADIUS = (CIRCLE_DIM/2)*0.88
-CENTRE_RADIUS = math.floor(INTERNAL_RADIUS/10)
-if INTERNAL_RADIUS % 10 != 0:
-    CENTRE_RADIUS += INTERNAL_RADIUS % 10
+CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/3) + (INTERNAL_RADIUS % 10)
 
 def gridMatrix ():
     matrix = []
-    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_RADIUS)/30)
+    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/25)
     for i in range(matrixHeight):
         matrix.append([])
         for j in range(60):
@@ -43,11 +40,9 @@ def gridMatrix ():
 
 def getBrick(block):
     blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE))
-    SCREEN.blit(blockImg, (BLOCK_OFFSET_X+CENTRE_RADIUS, BLOCK_OFFSET_Y))
+    SCREEN.blit(blockImg, (BLOCK_OFFSET_X+CENTRE_CIRCLE_RADIUS, BLOCK_OFFSET_Y))
 
 def fireBrick(direction, block):
-    #take index for direction
-    #iterate over loop to change value
     getBrick(blackBlock)
     for i in range(len(gameMatrix)):
         gameMatrix[i][direction] = block
@@ -67,23 +62,24 @@ def getOffset(n, dim):
 
 def renderBlocks ():
     #render bricks as matrix updates, alter scale
-    minScale = (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE*1.6)
+    minScale = (BLOCK_RECT[2]*BLOCK_MIN_SCALE[0], BLOCK_RECT[3]*BLOCK_MIN_SCALE[1])
     additionalOffset = 0
     for i in range(len(gameMatrix)):
+        centerOffset = CENTRE_CIRCLE_RADIUS+MARGIN+additionalOffset
+        scaleFactor = ((i+1)/3, (i+1)/6)
         for j in range(len(gameMatrix[i])):
-                blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (minScale[0]+(minScale[0]*((i+1)*0.22)), minScale[0]+(minScale[1]*((i+1)*0.1))))
+                blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
                 blockRect = blockImg.get_rect()
                 blockImg = pygame.transform.rotate(blockImg, j*-6)
                 blockRectRotated = blockImg.get_rect()
+
                 offsetDefaultX = CENTRE-(blockRectRotated[2]/2)
                 offsetDefaultY = CENTRE-(blockRectRotated[3]/2)
-                offsetX = offsetDefaultX+((CENTRE_RADIUS+MARGIN+additionalOffset)*getOffset(j, 'x'))
-                offsetY = offsetDefaultY+((-CENTRE_RADIUS-MARGIN-additionalOffset)*getOffset(j, 'y'))
-                if j%1 == 0:
-                    SCREEN.blit(blockImg, (offsetX, offsetY))
-        additionalOffset += blockRect[3]+5
+                offsetX = offsetDefaultX+(centerOffset*getOffset(j, 'x'))
+                offsetY = offsetDefaultY+(-centerOffset*getOffset(j, 'y'))
 
-            
+                SCREEN.blit(blockImg, (offsetX, offsetY))
+        additionalOffset += blockRect[3]+5            
 
 play = True
 
@@ -98,15 +94,14 @@ while play:
     SCREEN.fill((000, 000, 000))
 
     SCREEN.blit(circle, (BORDER, BORDER))
-    pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_RADIUS)
+    pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
     gameMatrix, MATRIX_HEIGHT = gridMatrix()
-    BLOCK_MIN_SCALE = (MATRIX_HEIGHT/100)*2.5
-    BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE)/2)
-    BLOCK_OFFSET_Y = CENTRE-CENTRE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE))
-    MARGIN = 100
-    activeBlock = BLOCKS[1]
-    #getBrick(activeBlock)
+    BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*2.5, (MATRIX_HEIGHT/100)*4)
+    BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE[0])/2)
+    BLOCK_OFFSET_Y = CENTRE-CENTRE_CIRCLE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+    MARGIN = 55
+    activeBlock = BLOCKS[6]
     renderBlocks()
 
     keys = pygame.key.get_pressed()
