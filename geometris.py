@@ -34,7 +34,7 @@ if INTERNAL_RADIUS % 10 != 0:
 
 def gridMatrix ():
     matrix = []
-    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_RADIUS)/40)-1
+    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_RADIUS)/30)
     for i in range(matrixHeight):
         matrix.append([])
         for j in range(60):
@@ -67,10 +67,11 @@ def getOffset(n, dim):
 
 def renderBlocks ():
     #render bricks as matrix updates, alter scale
+    minScale = (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE*1.6)
     additionalOffset = 0
     for i in range(len(gameMatrix)):
         for j in range(len(gameMatrix[i])):
-                blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE))
+                blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (minScale[0]+(minScale[0]*((i+1)*0.22)), minScale[0]+(minScale[1]*((i+1)*0.1))))
                 blockRect = blockImg.get_rect()
                 blockImg = pygame.transform.rotate(blockImg, j*-6)
                 blockRectRotated = blockImg.get_rect()
@@ -78,9 +79,9 @@ def renderBlocks ():
                 offsetDefaultY = CENTRE-(blockRectRotated[3]/2)
                 offsetX = offsetDefaultX+((CENTRE_RADIUS+MARGIN+additionalOffset)*getOffset(j, 'x'))
                 offsetY = offsetDefaultY+((-CENTRE_RADIUS-MARGIN-additionalOffset)*getOffset(j, 'y'))
-                        
-                SCREEN.blit(blockImg, (offsetX, offsetY))
-        additionalOffset += blockRect[3]
+                if j%1 == 0:
+                    SCREEN.blit(blockImg, (offsetX, offsetY))
+        additionalOffset += blockRect[3]+5
 
             
 
@@ -100,10 +101,10 @@ while play:
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_RADIUS)
 
     gameMatrix, MATRIX_HEIGHT = gridMatrix()
-    BLOCK_MIN_SCALE = 100/MATRIX_HEIGHT/100
+    BLOCK_MIN_SCALE = (MATRIX_HEIGHT/100)*2.5
     BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE)/2)
     BLOCK_OFFSET_Y = CENTRE-CENTRE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE))
-    MARGIN = 55
+    MARGIN = 100
     activeBlock = BLOCKS[1]
     #getBrick(activeBlock)
     renderBlocks()
