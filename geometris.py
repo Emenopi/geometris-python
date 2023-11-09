@@ -6,14 +6,14 @@ pygame.init()
 
 pygame.display.set_caption('Geometris')
 
-SCREEN_DIM = 900
-CIRCLE_DIM = SCREEN_DIM*0.91
-SCREEN = pygame.display.set_mode((SCREEN_DIM, SCREEN_DIM))
+SCREEN_SIZE = 900
+OUTER_CIRCLE_DIM = SCREEN_SIZE*0.91
+SCREEN = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
 
-circle = pygame.image.load('assets/circle.png')
-circle = pygame.transform.scale(circle, (CIRCLE_DIM, CIRCLE_DIM))
-circleRect = circle.get_rect()
+boundaryCircle = pygame.image.load('assets/circle.png')
+boundaryCircle = pygame.transform.scale(boundaryCircle, (OUTER_CIRCLE_DIM, OUTER_CIRCLE_DIM))
 
+# Load Blocks
 cyanBlock = pygame.image.load('assets/cyan.png')
 purpleBlock = pygame.image.load('assets/purple.png')
 magentaBlock = pygame.image.load('assets/magenta.png')
@@ -24,10 +24,10 @@ blackBlock = pygame.image.load('assets/black.png')
 BLOCK_RECT = cyanBlock.get_rect()
 BLOCKS = [cyanBlock, purpleBlock, magentaBlock, orangeBlock, yellowBlock, greenBlock, blackBlock]
 
-BORDER = (SCREEN_DIM-CIRCLE_DIM)/2
-CENTRE = SCREEN_DIM/2
-INTERNAL_RADIUS = (CIRCLE_DIM/2)*0.88
-CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/3) + (INTERNAL_RADIUS % 10)
+BORDER = (SCREEN_SIZE-OUTER_CIRCLE_DIM)/2
+CENTRE = SCREEN_SIZE/2
+INTERNAL_RADIUS = (OUTER_CIRCLE_DIM/2)*0.88
+CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/4)
 
 def gridMatrix ():
     matrix = []
@@ -39,8 +39,10 @@ def gridMatrix ():
     return matrix, matrixHeight
 
 def getBrick(block):
-    blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE, BLOCK_RECT[3]*BLOCK_MIN_SCALE))
-    SCREEN.blit(blockImg, (BLOCK_OFFSET_X+CENTRE_CIRCLE_RADIUS, BLOCK_OFFSET_Y))
+    blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+    blockRect = blockImg.get_rect()
+    blockCentre = (blockRect[2]/2, blockRect[3]/2)
+    SCREEN.blit(blockImg, (CENTRE-blockCentre[0], CENTRE-blockCentre[1]))
 
 def fireBrick(direction, block):
     getBrick(blackBlock)
@@ -59,13 +61,12 @@ def getOffset(n, dim):
         offset = math.cos(num)
     return offset
 
-
 def renderBlocks ():
     minScale = (BLOCK_RECT[2]*BLOCK_MIN_SCALE[0], BLOCK_RECT[3]*BLOCK_MIN_SCALE[1])
     additionalOffset = 0
     for i in range(len(gameMatrix)):
         centerOffset = CENTRE_CIRCLE_RADIUS+MARGIN+additionalOffset
-        scaleFactor = ((i+1)/6, (i+1)/28)
+        scaleFactor = ((i+1)/8, (i+1)/60)
         for j in range(len(gameMatrix[i])):
                 blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
                 blockRect = blockImg.get_rect()
@@ -91,8 +92,7 @@ play = True
 while play:
     
     SCREEN.fill((000, 000, 000))
-
-    SCREEN.blit(circle, (BORDER, BORDER))
+    SCREEN.blit(boundaryCircle, (BORDER, BORDER))
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
     renderBlocks()
