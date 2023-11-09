@@ -6,8 +6,8 @@ pygame.init()
 
 pygame.display.set_caption('Geometris')
 
-SCREEN_DIM = 800
-CIRCLE_DIM = SCREEN_DIM*0.85
+SCREEN_DIM = 900
+CIRCLE_DIM = SCREEN_DIM*0.91
 SCREEN = pygame.display.set_mode((SCREEN_DIM, SCREEN_DIM))
 
 circle = pygame.image.load('assets/circle.png')
@@ -31,7 +31,7 @@ CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/3) + (INTERNAL_RADIUS % 10)
 
 def gridMatrix ():
     matrix = []
-    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/25)
+    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/18)
     for i in range(matrixHeight):
         matrix.append([])
         for j in range(60):
@@ -61,12 +61,11 @@ def getOffset(n, dim):
 
 
 def renderBlocks ():
-    #render bricks as matrix updates, alter scale
     minScale = (BLOCK_RECT[2]*BLOCK_MIN_SCALE[0], BLOCK_RECT[3]*BLOCK_MIN_SCALE[1])
     additionalOffset = 0
     for i in range(len(gameMatrix)):
         centerOffset = CENTRE_CIRCLE_RADIUS+MARGIN+additionalOffset
-        scaleFactor = ((i+1)/3, (i+1)/6)
+        scaleFactor = ((i+1)/6, (i+1)/28)
         for j in range(len(gameMatrix[i])):
                 blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
                 blockRect = blockImg.get_rect()
@@ -79,34 +78,28 @@ def renderBlocks ():
                 offsetY = offsetDefaultY+(-centerOffset*getOffset(j, 'y'))
 
                 SCREEN.blit(blockImg, (offsetX, offsetY))
-        additionalOffset += blockRect[3]+5            
+        additionalOffset += blockRect[3]+3
+
+gameMatrix, MATRIX_HEIGHT = gridMatrix()
+BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*1.5, (MATRIX_HEIGHT/100)*3)
+BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE[0])/2)
+BLOCK_OFFSET_Y = CENTRE-CENTRE_CIRCLE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+MARGIN = 25        
 
 play = True
 
 while play:
-
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-
-            play = False
     
     SCREEN.fill((000, 000, 000))
 
     SCREEN.blit(circle, (BORDER, BORDER))
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
-    gameMatrix, MATRIX_HEIGHT = gridMatrix()
-    BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*2.5, (MATRIX_HEIGHT/100)*4)
-    BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE[0])/2)
-    BLOCK_OFFSET_Y = CENTRE-CENTRE_CIRCLE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
-    MARGIN = 55
-    activeBlock = BLOCKS[6]
     renderBlocks()
 
-    keys = pygame.key.get_pressed()
+    keys = pygame.key.get_pressed()    
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == pygame.QUIT:
             play = False
         if event.type == KEYDOWN and event.key == K_SPACE:
             gameMatrix[0][0] = blackBlock
