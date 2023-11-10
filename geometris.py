@@ -23,7 +23,14 @@ yellowBlock = pygame.image.load('assets/yellow.png')
 greenBlock = pygame.image.load('assets/green.png')
 blackBlock = pygame.image.load('assets/black.png')
 BLOCK_RECT = cyanBlock.get_rect()
-BLOCKS = [cyanBlock, purpleBlock, magentaBlock, orangeBlock, yellowBlock, greenBlock, blackBlock]
+BLOCKS_BY_INDEX = ["cyan", "purple", "magenta", "orange", "yellow", "green", "black"]
+BLOCKS_BY_NAME = {"cyan": cyanBlock, 
+                  "purple": purpleBlock, 
+                  "magenta": magentaBlock, 
+                  "orange": orangeBlock, 
+                  "yellow": yellowBlock, 
+                  "green": greenBlock,
+                  "black": blackBlock}
 
 BORDER = (SCREEN_SIZE-OUTER_CIRCLE_DIM)/2
 CENTRE = SCREEN_SIZE/2
@@ -39,23 +46,26 @@ def gridMatrix ():
     for i in range(matrixHeight):
         matrix.append([])
         for j in range(60):
-            matrix[i].append(BLOCKS[6])
+            matrix[i].append("black")
     return matrix, matrixHeight
 
 def getNewBrick():
-    brickIndex = random.randint(0, 5)
-    return BLOCKS[brickIndex]
+    blockIndex = random.randint(0, 5)
+    block = BLOCKS_BY_INDEX[blockIndex]
+    return block
 
-def renderNextBrick(brick):
-    blockImg = pygame.transform.scale(brick, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+def renderNextBrick(block):
+    block = BLOCKS_BY_NAME[block]
+    blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
     blockRect = blockImg.get_rect()
     blockCentre = (blockRect[2]/2, blockRect[3]/2)
     SCREEN.blit(blockImg, (CENTRE-blockCentre[0], CENTRE-blockCentre[1]))
 
 def fireBrick(i, direction, block):
+    if gameMatrix[i][direction] == "black":
         gameMatrix[i][direction] = block
         if i > 0:
-            gameMatrix[i-1][direction] = blackBlock
+            gameMatrix[i-1][direction] = "black"
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -72,7 +82,8 @@ def renderBlocks ():
         centerOffset = CENTRE_CIRCLE_RADIUS+MARGIN+additionalOffset
         scaleFactor = ((i+1)/8, (i+1)/60)
         for j in range(len(gameMatrix[i])):
-                blockImg = pygame.transform.smoothscale(gameMatrix[i][j], (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
+                currentBlock = BLOCKS_BY_NAME[gameMatrix[i][j]]
+                blockImg = pygame.transform.smoothscale(currentBlock, (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
                 blockRect = blockImg.get_rect()
                 blockImg = pygame.transform.rotate(blockImg, j*-6)
                 blockRectRotated = blockImg.get_rect()
@@ -120,7 +131,6 @@ while play:
             fireBrick(index, 0, movingBrick)
             renderBlocks()
             index += 1
-            print(index)
             if index >= len(gameMatrix):
                 index = 0
 
