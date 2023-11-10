@@ -172,7 +172,6 @@ while play:
             pygame.time.set_timer(fireEvent, brickSpeed, maxBlockMoves)
         if event.type == fireEvent and index < len(gameMatrix):
             canMove = fireBrick(index, 0, movingBrick, blockIsMoving)
-            print(canMove, index)
             index += 1
             if index >= len(gameMatrix) or not canMove:
                 index = 0
