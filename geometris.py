@@ -81,12 +81,34 @@ def renderNextBrick(blockMatrix):
             blockCentre = (blockRect[2]/2, blockRect[3]/2)
             SCREEN.blit(blockImg, (CENTRE-blockCentre[0]-(blockRect[2]*j), CENTRE-blockCentre[1]+(blockRect[3]*i)))
     
+def canBlockMove(i, direction, blockMatrix):
+    #if len(blockmatrix[index]) > len(blockmatrix[index-1]): is gamematrix[index][direction+extra] == black? ok
+    checkDepth = len(blockMatrix)
+    for checkIndex in range(checkDepth):
+        if checkIndex == 0:
+            for widthIndex in range(len(blockMatrix[checkDepth-1])):
+                if gameMatrix[i][direction+widthIndex] != "black":
+                    return False
+        else:
+            widthToCheck = len(blockMatrix[checkDepth-checkIndex-1]) > len(blockMatrix[checkDepth-checkIndex])
+            if widthToCheck > 0:
+                for widthIndex in range(1, widthToCheck+1):
+                    if gameMatrix[i-checkIndex][direction+widthIndex] != "black":
+                        return False
+    return True
 
-def fireBrick(i, direction, block):
-    if gameMatrix[i][direction] == "black":
+def setBlockMoving(bool):
+    blockIsMoving = bool
+
+
+def fireBrick(i, direction, block, blockIsMoving):
+    blockMatrix = getBlockMatrix(block)
+    canMove = canBlockMove(i, direction, blockMatrix)
+    if canMove:
         gameMatrix[i][direction] = block
         if i > 0:
             gameMatrix[i-1][direction] = "black"
+    return canMove
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -141,7 +163,8 @@ while play:
         blockMatrix = getBlockMatrix(nextBrick)
         renderNextBrick(blockMatrix)
 
-    keys = pygame.key.get_pressed()    
+    keys = pygame.key.get_pressed()
+    maxBlockMoves = len(gameMatrix)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             play = False
@@ -150,14 +173,17 @@ while play:
             movingBrick = nextBrick
             nextBrick = False
             index = 0
-            pygame.time.set_timer(fireEvent, brickSpeed, len(gameMatrix))
+            maxBlockMoves = len(gameMatrix)
+            pygame.time.set_timer(fireEvent, brickSpeed, maxBlockMoves)
         if event.type == fireEvent and index < len(gameMatrix):
-            fireBrick(index, 0, movingBrick)
-            renderBlocks()
+            canMove = fireBrick(index, 0, movingBrick, blockIsMoving)
+            print(canMove, index)
             index += 1
-            if index >= len(gameMatrix):
+            if index >= len(gameMatrix) or not canMove:
                 index = 0
                 blockIsMoving = False
+                pygame.time.set_timer(fireEvent, 0)            
+            renderBlocks()
 
     pygame.display.flip()
 
