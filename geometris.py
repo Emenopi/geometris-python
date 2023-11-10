@@ -49,17 +49,38 @@ def gridMatrix ():
             matrix[i].append("black")
     return matrix, matrixHeight
 
+def getBlockMatrix(blockName):
+    if blockName == "cyan":
+        blockMatrix = [["cyan"]]
+    elif blockName == "purple":
+        blockMatrix = [["purple"], ["purple"], ["purple"]]
+    elif blockName == "magenta":
+        blockMatrix = [["magenta", "magenta"], ["magenta", "magenta"]]
+    elif blockName == "orange":
+        blockMatrix = [["orange"], ["orange", "orange"]]
+    elif blockName == "yellow":
+        blockMatrix = [["yellow", "yellow"], ["yellow"], ["yellow"]]
+    elif blockName == "green":
+        blockMatrix = [["green"], ["green", "green"], ["green"]]
+    else:
+        blockMatrix = [["black"]]
+    return blockMatrix
+
+
 def getNewBrick():
     blockIndex = random.randint(0, 5)
     block = BLOCKS_BY_INDEX[blockIndex]
     return block
 
-def renderNextBrick(block):
-    block = BLOCKS_BY_NAME[block]
-    blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
-    blockRect = blockImg.get_rect()
-    blockCentre = (blockRect[2]/2, blockRect[3]/2)
-    SCREEN.blit(blockImg, (CENTRE-blockCentre[0], CENTRE-blockCentre[1]))
+def renderNextBrick(blockMatrix):
+    for i in range(len(blockMatrix)):
+        for j in range(len(blockMatrix[i])):
+            block = BLOCKS_BY_NAME[blockMatrix[i][j]]
+            blockImg = pygame.transform.smoothscale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+            blockRect = blockImg.get_rect()
+            blockCentre = (blockRect[2]/2, blockRect[3]/2)
+            SCREEN.blit(blockImg, (CENTRE-blockCentre[0]-(blockRect[2]*j), CENTRE-blockCentre[1]+(blockRect[3]*i)))
+    
 
 def fireBrick(i, direction, block):
     if gameMatrix[i][direction] == "black":
@@ -109,14 +130,15 @@ while play:
     
     SCREEN.fill((000, 000, 000))
     SCREEN.blit(boundaryCircle, (BORDER, BORDER))
-    pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
     pygame.draw.circle(SCREEN, (0, 0, 0), (CENTRE, CENTRE), INTERNAL_RADIUS)
+    pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
     renderBlocks()
     if nextBrick == False:
         nextBrick = getNewBrick()
     else:
-        renderNextBrick(nextBrick)
+        blockMatrix = getBlockMatrix(nextBrick)
+        renderNextBrick(blockMatrix)
 
     keys = pygame.key.get_pressed()    
     for event in pygame.event.get():
