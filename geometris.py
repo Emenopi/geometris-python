@@ -82,7 +82,6 @@ def renderNextBrick(blockMatrix):
             SCREEN.blit(blockImg, (CENTRE-blockCentre[0]-(blockRect[2]*j), CENTRE-blockCentre[1]+(blockRect[3]*i)))
     
 def canBlockMove(i, direction, blockMatrix):
-    #if len(blockmatrix[index]) > len(blockmatrix[index-1]): is gamematrix[index][direction+extra] == black? ok
     checkDepth = len(blockMatrix)
     for checkIndex in range(checkDepth):
         if checkIndex == 0:
@@ -96,10 +95,6 @@ def canBlockMove(i, direction, blockMatrix):
                     if gameMatrix[i-checkIndex][direction+widthIndex] != "black":
                         return False
     return True
-
-def setBlockMoving(bool):
-    blockIsMoving = bool
-
 
 def fireBrick(i, direction, block, blockIsMoving):
     blockMatrix = getBlockMatrix(block)
