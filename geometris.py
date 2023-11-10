@@ -96,7 +96,7 @@ def canBlockMove(i, direction, blockMatrix):
                         return False
     return True
 
-def fireBrick(i, direction, block, blockIsMoving):
+def fireBrick(i, direction, block):
     blockMatrix = getBlockMatrix(block)
     canMove = canBlockMove(i, direction, blockMatrix)
     if canMove:
