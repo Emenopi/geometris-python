@@ -125,6 +125,7 @@ MARGIN = 25
 nextBrick = False     
 
 play = True
+blockIsMoving = False
 
 while play:
     
@@ -144,7 +145,8 @@ while play:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             play = False
-        if event.type == KEYDOWN and event.key == K_SPACE:
+        if event.type == KEYDOWN and event.key == K_SPACE and not blockIsMoving:
+            blockIsMoving = True
             movingBrick = nextBrick
             nextBrick = False
             index = 0
@@ -155,6 +157,7 @@ while play:
             index += 1
             if index >= len(gameMatrix):
                 index = 0
+                blockIsMoving = False
 
     pygame.display.flip()
 
