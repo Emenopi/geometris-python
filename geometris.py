@@ -30,17 +30,20 @@ CENTRE = SCREEN_SIZE/2
 INTERNAL_RADIUS = (OUTER_CIRCLE_DIM/2)*0.88
 CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/4)
 
+brickSpeed = 100
+brickMoveEvent = pygame.USEREVENT+1
+
 def gridMatrix ():
     matrix = []
     matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/18)
     for i in range(matrixHeight):
         matrix.append([])
         for j in range(60):
-            matrix[i].append(BLOCKS[0])
+            matrix[i].append(BLOCKS[6])
     return matrix, matrixHeight
 
 def getNewBrick():
-    brickIndex = random.randint(0, 6)
+    brickIndex = random.randint(0, 5)
     return BLOCKS[brickIndex]
 
 def renderNextBrick(brick):
@@ -50,13 +53,11 @@ def renderNextBrick(brick):
     SCREEN.blit(blockImg, (CENTRE-blockCentre[0], CENTRE-blockCentre[1]))
 
 def fireBrick(direction, block):
-    nextBrick = False
     for i in range(len(gameMatrix)):
         gameMatrix[i][direction] = block
         if i > 0:
             gameMatrix[i-1][direction] = blackBlock
-        renderBlocks()
-        pygame.time.delay(100)
+        pygame.time.wait(brickSpeed)
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -100,6 +101,7 @@ while play:
     SCREEN.fill((000, 000, 000))
     SCREEN.blit(boundaryCircle, (BORDER, BORDER))
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
+    pygame.draw.circle(SCREEN, (0, 0, 0), (CENTRE, CENTRE), INTERNAL_RADIUS)
 
     renderBlocks()
     if nextBrick == False:
@@ -112,7 +114,10 @@ while play:
         if event.type == pygame.QUIT:
             play = False
         if event.type == KEYDOWN and event.key == K_SPACE:
-            gameMatrix[0][0] = blackBlock
+            movingBrick = nextBrick
+            nextBrick = False
+            fireBrick(0, movingBrick)
+            renderBlocks()
 
     pygame.display.flip()
 
