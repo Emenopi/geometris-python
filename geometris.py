@@ -30,8 +30,8 @@ CENTRE = SCREEN_SIZE/2
 INTERNAL_RADIUS = (OUTER_CIRCLE_DIM/2)*0.88
 CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/4)
 
-brickSpeed = 100
-brickMoveEvent = pygame.USEREVENT+1
+brickSpeed = 500
+fireEvent = pygame.USEREVENT+1
 
 def gridMatrix ():
     matrix = []
@@ -52,12 +52,10 @@ def renderNextBrick(brick):
     blockCentre = (blockRect[2]/2, blockRect[3]/2)
     SCREEN.blit(blockImg, (CENTRE-blockCentre[0], CENTRE-blockCentre[1]))
 
-def fireBrick(direction, block):
-    for i in range(len(gameMatrix)):
+def fireBrick(i, direction, block):
         gameMatrix[i][direction] = block
         if i > 0:
             gameMatrix[i-1][direction] = blackBlock
-        pygame.time.wait(brickSpeed)
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -116,8 +114,15 @@ while play:
         if event.type == KEYDOWN and event.key == K_SPACE:
             movingBrick = nextBrick
             nextBrick = False
-            fireBrick(0, movingBrick)
+            index = 0
+            pygame.time.set_timer(fireEvent, brickSpeed, len(gameMatrix))
+        if event.type == fireEvent and index < len(gameMatrix):
+            fireBrick(index, 0, movingBrick)
             renderBlocks()
+            index += 1
+            print(index)
+            if index >= len(gameMatrix):
+                index = 0
 
     pygame.display.flip()
 
