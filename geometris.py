@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import math
+import random
 
 pygame.init()
 
@@ -38,14 +39,18 @@ def gridMatrix ():
             matrix[i].append(BLOCKS[0])
     return matrix, matrixHeight
 
-def getBrick(block):
-    blockImg = pygame.transform.scale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+def getNewBrick():
+    brickIndex = random.randint(0, 6)
+    return BLOCKS[brickIndex]
+
+def renderNextBrick(brick):
+    blockImg = pygame.transform.scale(brick, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
     blockRect = blockImg.get_rect()
     blockCentre = (blockRect[2]/2, blockRect[3]/2)
     SCREEN.blit(blockImg, (CENTRE-blockCentre[0], CENTRE-blockCentre[1]))
 
 def fireBrick(direction, block):
-    getBrick(blackBlock)
+    nextBrick = False
     for i in range(len(gameMatrix)):
         gameMatrix[i][direction] = block
         if i > 0:
@@ -85,7 +90,8 @@ gameMatrix, MATRIX_HEIGHT = gridMatrix()
 BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*1.5, (MATRIX_HEIGHT/100)*3)
 BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE[0])/2)
 BLOCK_OFFSET_Y = CENTRE-CENTRE_CIRCLE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
-MARGIN = 25        
+MARGIN = 25
+nextBrick = False     
 
 play = True
 
@@ -96,6 +102,10 @@ while play:
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
     renderBlocks()
+    if nextBrick == False:
+        nextBrick = getNewBrick()
+    else:
+        renderNextBrick(nextBrick)
 
     keys = pygame.key.get_pressed()    
     for event in pygame.event.get():
