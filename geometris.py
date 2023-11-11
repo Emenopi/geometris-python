@@ -22,6 +22,7 @@ orangeBlock = pygame.image.load('assets/orange.png')
 yellowBlock = pygame.image.load('assets/yellow.png')
 greenBlock = pygame.image.load('assets/green.png')
 blackBlock = pygame.image.load('assets/black.png')
+
 BLOCK_RECT = cyanBlock.get_rect()
 BLOCKS_BY_INDEX = ["cyan", "purple", "magenta", "orange", "yellow", "green", "black"]
 BLOCKS_BY_NAME = {"cyan": cyanBlock, 
@@ -39,6 +40,7 @@ CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/4)
 
 brickSpeed = 500
 fireEvent = pygame.USEREVENT+1
+rotateCentreBlockEvent = pygame.USEREVENT+2
 
 def gridMatrix ():
     matrix = []
@@ -53,19 +55,26 @@ def getBlockMatrix(blockName):
     if blockName == "cyan":
         blockMatrix = [["cyan"]]
     elif blockName == "purple":
-        blockMatrix = [["purple"], ["purple"], ["purple"]]
+        blockMatrix = [["purple"], 
+                       ["purple"], 
+                       ["purple"]]
     elif blockName == "magenta":
-        blockMatrix = [["magenta", "magenta"], ["magenta", "magenta"]]
+        blockMatrix = [["magenta", "magenta"], 
+                       ["magenta", "magenta"]]
     elif blockName == "orange":
-        blockMatrix = [["orange"], ["orange", "orange"]]
+        blockMatrix = [["orange"], 
+                       ["orange", "orange"]]
     elif blockName == "yellow":
-        blockMatrix = [["yellow", "yellow"], ["yellow"], ["yellow"]]
+        blockMatrix = [["yellow", "yellow"], 
+                       ["yellow"], 
+                       ["yellow"]]
     elif blockName == "green":
-        blockMatrix = [["green"], ["green", "green"], ["green"]]
+        blockMatrix = [["green"], 
+                       ["green", "green"], 
+                       ["green"]]
     else:
         blockMatrix = [["black"]]
     return blockMatrix
-
 
 def getNewBrick():
     blockIndex = random.randint(0, 5)
@@ -79,19 +88,16 @@ def getMatrixWidth(matrix):
             width = len(matrix[i])
     return width
 
-def renderNextBrick(direction, blockMatrix):
-    matrixWidth = getMatrixWidth(blockMatrix)
-    for i in range(len(blockMatrix)):
-        additionalOffsetY = len(blockMatrix) * i + (23 * i)
-        for j in range(len(blockMatrix[i])):
-            block = BLOCKS_BY_NAME[blockMatrix[i][j]]
-            blockImg = pygame.transform.smoothscale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
-            blockImg = pygame.transform.rotate(blockImg, (j+direction)*6)
-            blockRect = blockImg.get_rect()
-            matrixCentre = ((matrixWidth/2) * blockRect[2], (len(blockMatrix)/2) * blockRect[3])
-            offsetX = CENTRE-matrixCentre[0] * (j%2) - blockRect[2]/2
-            offsetY = CENTRE+10-matrixCentre[1] * (i%len(blockMatrix)) + (-CENTRE_CIRCLE_RADIUS*getOffset(j, 'y')) + additionalOffsetY + blockRect[3]
-            SCREEN.blit(blockImg, (offsetX, offsetY))
+def renderNextBrick(direction, activeBrick):
+    block = pygame.image.load('assets/%s_full.png' % activeBrick)
+    block = pygame.transform.rotate(block, direction*-6)
+    blockSize = block.get_size()
+    block = pygame.transform.smoothscale(block, (blockSize[0]*0.3, blockSize[1]*0.3))
+    adjustedBlockSize = block.get_size()
+    blockCentre = [adjustedBlockSize[0]/2, adjustedBlockSize[1]/2]
+    offsetX = (CENTRE_CIRCLE_RADIUS-adjustedBlockSize[0]-5)*getOffset(direction ,'x')
+    offsetY = (-CENTRE_CIRCLE_RADIUS+adjustedBlockSize[1]-5)*getOffset(direction, 'y')
+    SCREEN.blit(block, (CENTRE-blockCentre[0]+offsetX, CENTRE-blockCentre[1]+offsetY))
     
 def canBlockMove(i, direction, blockMatrix):
     checkDepth = len(blockMatrix)
@@ -156,9 +162,12 @@ nextBrick = False
 
 play = True
 blockIsMoving = False
+rotationRate = 1000
+directionToFire = 0
+pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 60)
 
 while play:
-    
+
     SCREEN.fill((000, 000, 000))
     SCREEN.blit(boundaryCircle, (BORDER, BORDER))
     pygame.draw.circle(SCREEN, (0, 0, 0), (CENTRE, CENTRE), INTERNAL_RADIUS)
@@ -168,11 +177,11 @@ while play:
     if nextBrick == False:
         nextBrick = getNewBrick()
     else:
-        blockMatrix = getBlockMatrix(nextBrick)
-        renderNextBrick(0, blockMatrix)
+        renderNextBrick(directionToFire, nextBrick)
 
     keys = pygame.key.get_pressed()
     maxBlockMoves = len(gameMatrix)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             play = False
@@ -185,15 +194,21 @@ while play:
             pygame.time.set_timer(fireEvent, brickSpeed, maxBlockMoves)
         if event.type == fireEvent and index < len(gameMatrix):
             blockMatrix = getBlockMatrix(movingBrick)
-            canMove = canBlockMove(index, 0, blockMatrix)
+            canMove = canBlockMove(index, directionToFire, blockMatrix)
             if canMove:
-                fireBrick(index, 0, blockMatrix)
+                fireBrick(index, directionToFire, blockMatrix)
             index += 1
             if index >= len(gameMatrix) or not canMove:
                 index = 0
                 blockIsMoving = False
                 pygame.time.set_timer(fireEvent, 0)            
             renderBlocks()
+        if event.type == rotateCentreBlockEvent and not blockIsMoving:
+            directionToFire += 1
+            if directionToFire == 60:
+                directionToFire = 0
+            pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 0)
+            pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 60)
 
     pygame.display.flip()
 
