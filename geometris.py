@@ -176,12 +176,17 @@ def checkFullLines(matrix):
             break
     return fullLine, lineIndex
 
-def deleteFullLines():
+def deleteFullLines(score):
     fullLine, lineIndex = checkFullLines(gameMatrix)
     if fullLine == True:
         for i in range(lineIndex, -1, -1):
             for j in range(len(gameMatrix[i])):
-                gameMatrix[i][j] = gameMatrix[i-1][j]
+                if i == 0:
+                    gameMatrix[i][j] = "black"
+                else:
+                    gameMatrix[i][j] = gameMatrix[i-1][j]
+        score += 60
+    return score
 
 
 gameMatrix, MATRIX_HEIGHT = gridMatrix()
@@ -206,7 +211,7 @@ while play:
 
     renderScore(score)
     renderBlocks()
-    deleteFullLines()
+    score = deleteFullLines(score)
     if nextBrick == False:
         nextBrick = getNewBrick()
     else:
