@@ -86,31 +86,25 @@ def canBlockMove(i, direction, blockMatrix):
     for index in range(checkDepth):
         for width in range(len(blockMatrix[index])):
             if index == 0 and gameMatrix[i][direction+width] != "black":
-                print("false 1")
                 return False
             elif len(blockMatrix[index]) - len(blockMatrix[index-1]):
                 checkWidth = len(blockMatrix[index]) - len(blockMatrix[index-1])
                 for w in range(1, checkWidth):
                     if gameMatrix[i-index][direction+w] != "black":
-                        print("false 2")
                         return False
     return True
 
-def fireBrick(i, direction, block):
-    blockMatrix = getBlockMatrix(block)
-    canMove = canBlockMove(i, direction, blockMatrix)
-    if canMove:
-        if i+1 < len(blockMatrix):
-            iterations = i+1
-        else:
-            iterations = len(blockMatrix)
+def fireBrick(i, direction, blockMatrix):
+    if i+1 < len(blockMatrix):
+        iterations = i+1
+    else:
+        iterations = len(blockMatrix)
 
-        for index in range(iterations):
-            for widthIndex in range(len(blockMatrix[index])):
-                if (i - index - 1) >= 0:
-                    gameMatrix[i-index-1][direction-widthIndex] = "black"
-                gameMatrix[i-index][direction-widthIndex] = block
-    return canMove
+    for index in range(iterations):
+        for widthIndex in range(len(blockMatrix[index])):
+            if (i - index - 1) >= 0:
+                gameMatrix[i-index-1][direction-widthIndex] = "black"
+            gameMatrix[i-index][direction-widthIndex] = blockMatrix[0][0]
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -178,7 +172,10 @@ while play:
             maxBlockMoves = len(gameMatrix)
             pygame.time.set_timer(fireEvent, brickSpeed, maxBlockMoves)
         if event.type == fireEvent and index < len(gameMatrix):
-            canMove = fireBrick(index, 0, movingBrick)
+            blockMatrix = getBlockMatrix(movingBrick)
+            canMove = canBlockMove(index, 0, blockMatrix)
+            if canMove:
+                fireBrick(index, 0, blockMatrix)
             index += 1
             if index >= len(gameMatrix) or not canMove:
                 index = 0
