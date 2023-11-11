@@ -51,7 +51,6 @@ def renderScore(score):
     scoreRect = scoreImg.get_rect()
     SCREEN.blit(scoreImg, (scoreRect[0]+10, scoreRect[1]+10))
 
-
 def gridMatrix ():
     matrix = []
     matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/18)
@@ -113,7 +112,7 @@ def canBlockMove(i, direction, blockMatrix):
     checkDepth = len(blockMatrix)
     for index in range(checkDepth):
         for width in range(len(blockMatrix[index])):
-            if index == 0 and gameMatrix[i][direction+width] != "black":
+            if index == 0 and gameMatrix[i][(direction+width)%60] != "black":
                 return False
             elif len(blockMatrix[index]) - len(blockMatrix[index-1]):
                 checkWidth = len(blockMatrix[index]) - len(blockMatrix[index-1])
@@ -131,8 +130,8 @@ def fireBrick(i, direction, blockMatrix):
     for index in range(iterations):
         for widthIndex in range(len(blockMatrix[index])):
             if (i - index - 1) >= 0:
-                gameMatrix[i-index-1][direction+widthIndex] = "black"
-            gameMatrix[i-index][direction+widthIndex] = blockMatrix[0][0]
+                gameMatrix[i-index-1][(direction+widthIndex)%60] = "black"
+            gameMatrix[i-index][(direction+widthIndex)%60] = blockMatrix[0][0]
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -163,6 +162,28 @@ def renderBlocks ():
                 SCREEN.blit(blockImg, (offsetX, offsetY))
         additionalOffset += blockRect[3]+3
 
+def checkFullLines(matrix):
+    fullLine = False
+    lineIndex = 0
+    for i in range(len(gameMatrix)):
+        for j in range(len(gameMatrix[i])):
+            if gameMatrix[i][j] == "black":
+                break
+            elif j == (len(gameMatrix[i])-1) and gameMatrix[i][j] != "black":
+                fullLine = True
+                lineIndex = i
+        if fullLine == True:
+            break
+    return fullLine, lineIndex
+
+def deleteFullLines():
+    fullLine, lineIndex = checkFullLines(gameMatrix)
+    if fullLine == True:
+        for i in range(lineIndex, -1, -1):
+            for j in range(len(gameMatrix[i])):
+                gameMatrix[i][j] = gameMatrix[i-1][j]
+
+
 gameMatrix, MATRIX_HEIGHT = gridMatrix()
 BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*1.5, (MATRIX_HEIGHT/100)*3)
 BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE[0])/2)
@@ -185,6 +206,7 @@ while play:
 
     renderScore(score)
     renderBlocks()
+    deleteFullLines()
     if nextBrick == False:
         nextBrick = getNewBrick()
     else:
