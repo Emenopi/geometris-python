@@ -12,6 +12,7 @@ OUTER_CIRCLE_DIM = SCREEN_SIZE*0.91
 SCREEN = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
 DEFAULTFONT = pygame.font.Font('freesansbold.ttf', 20)
 score = 0
+level = 1
 
 boundaryCircle = pygame.image.load('assets/circle.png')
 boundaryCircle = pygame.transform.scale(boundaryCircle, (OUTER_CIRCLE_DIM, OUTER_CIRCLE_DIM))
@@ -188,6 +189,11 @@ def deleteFullLines(score):
         score += 60
     return score
 
+def setRotationRate(rotationRate, score):
+    if rotationRate >= 5:
+        rotationRate -= math.floor(score/60)*5
+    return rotationRate
+
 
 gameMatrix, MATRIX_HEIGHT = gridMatrix()
 BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*1.5, (MATRIX_HEIGHT/100)*3)
@@ -212,6 +218,7 @@ while play:
     renderScore(score)
     renderBlocks()
     score = deleteFullLines(score)
+    rotationRate = setRotationRate(rotationRate, score)
     if nextBrick == False:
         nextBrick = getNewBrick()
     else:
