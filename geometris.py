@@ -121,8 +121,8 @@ def fireBrick(i, direction, blockMatrix):
     for index in range(iterations):
         for widthIndex in range(len(blockMatrix[index])):
             if (i - index - 1) >= 0:
-                gameMatrix[i-index-1][direction-widthIndex] = "black"
-            gameMatrix[i-index][direction-widthIndex] = blockMatrix[0][0]
+                gameMatrix[i-index-1][direction+widthIndex] = "black"
+            gameMatrix[i-index][direction+widthIndex] = blockMatrix[0][0]
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
