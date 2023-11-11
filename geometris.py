@@ -14,6 +14,8 @@ SCREEN = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
 boundaryCircle = pygame.image.load('assets/circle.png')
 boundaryCircle = pygame.transform.scale(boundaryCircle, (OUTER_CIRCLE_DIM, OUTER_CIRCLE_DIM))
 
+pygame.display.set_icon(boundaryCircle)
+
 # Load Blocks
 cyanBlock = pygame.image.load('assets/cyan.png')
 purpleBlock = pygame.image.load('assets/purple.png')
