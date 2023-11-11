@@ -10,6 +10,8 @@ pygame.display.set_caption('Geometris')
 SCREEN_SIZE = 900
 OUTER_CIRCLE_DIM = SCREEN_SIZE*0.91
 SCREEN = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
+DEFAULTFONT = pygame.font.Font('freesansbold.ttf', 20)
+score = 0
 
 boundaryCircle = pygame.image.load('assets/circle.png')
 boundaryCircle = pygame.transform.scale(boundaryCircle, (OUTER_CIRCLE_DIM, OUTER_CIRCLE_DIM))
@@ -43,6 +45,12 @@ CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/4)
 brickSpeed = 500
 fireEvent = pygame.USEREVENT+1
 rotateCentreBlockEvent = pygame.USEREVENT+2
+
+def renderScore(score):
+    scoreImg = DEFAULTFONT.render("SCORE: %s" % str(score), 1, (255, 0, 128))
+    scoreRect = scoreImg.get_rect()
+    SCREEN.blit(scoreImg, (scoreRect[0]+10, scoreRect[1]+10))
+
 
 def gridMatrix ():
     matrix = []
@@ -175,6 +183,7 @@ while play:
     pygame.draw.circle(SCREEN, (0, 0, 0), (CENTRE, CENTRE), INTERNAL_RADIUS)
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
+    renderScore(score)
     renderBlocks()
     if nextBrick == False:
         nextBrick = getNewBrick()
