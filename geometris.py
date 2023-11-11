@@ -72,14 +72,26 @@ def getNewBrick():
     block = BLOCKS_BY_INDEX[blockIndex]
     return block
 
-def renderNextBrick(blockMatrix):
+def getMatrixWidth(matrix):
+    width = 0
+    for i in range(len(matrix)):
+        if len(matrix[i]) > width:
+            width = len(matrix[i])
+    return width
+
+def renderNextBrick(direction, blockMatrix):
+    matrixWidth = getMatrixWidth(blockMatrix)
     for i in range(len(blockMatrix)):
+        additionalOffsetY = len(blockMatrix) * i + (23 * i)
         for j in range(len(blockMatrix[i])):
             block = BLOCKS_BY_NAME[blockMatrix[i][j]]
             blockImg = pygame.transform.smoothscale(block, (BLOCK_RECT[2]*BLOCK_MIN_SCALE[1], BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
+            blockImg = pygame.transform.rotate(blockImg, (j+direction)*6)
             blockRect = blockImg.get_rect()
-            blockCentre = (blockRect[2]/2, blockRect[3]/2)
-            SCREEN.blit(blockImg, (CENTRE-blockCentre[0]-(blockRect[2]*j), CENTRE-blockCentre[1]+(blockRect[3]*i)))
+            matrixCentre = ((matrixWidth/2) * blockRect[2], (len(blockMatrix)/2) * blockRect[3])
+            offsetX = CENTRE-matrixCentre[0] * (j%2) - blockRect[2]/2
+            offsetY = CENTRE+10-matrixCentre[1] * (i%len(blockMatrix)) + (-CENTRE_CIRCLE_RADIUS*getOffset(j, 'y')) + additionalOffsetY + blockRect[3]
+            SCREEN.blit(blockImg, (offsetX, offsetY))
     
 def canBlockMove(i, direction, blockMatrix):
     checkDepth = len(blockMatrix)
@@ -157,7 +169,7 @@ while play:
         nextBrick = getNewBrick()
     else:
         blockMatrix = getBlockMatrix(nextBrick)
-        renderNextBrick(blockMatrix)
+        renderNextBrick(0, blockMatrix)
 
     keys = pygame.key.get_pressed()
     maxBlockMoves = len(gameMatrix)
