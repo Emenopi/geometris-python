@@ -2,64 +2,35 @@ import pygame
 from pygame.locals import *
 import math
 import random
+from init import *
+from score import *
 
 pygame.init()
 
 pygame.display.set_caption('Geometris')
-
-SCREEN_SIZE = 900
-OUTER_CIRCLE_DIM = SCREEN_SIZE*0.91
-SCREEN = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
 DEFAULTFONT = pygame.font.Font('freesansbold.ttf', 20)
+
 score = 0
-level = 1
-
-boundaryCircle = pygame.image.load('assets/circle.png')
-boundaryCircle = pygame.transform.scale(boundaryCircle, (OUTER_CIRCLE_DIM, OUTER_CIRCLE_DIM))
-
-pygame.display.set_icon(boundaryCircle)
-
-# Load Blocks
-cyanBlock = pygame.image.load('assets/cyan.png')
-purpleBlock = pygame.image.load('assets/purple.png')
-magentaBlock = pygame.image.load('assets/magenta.png')
-orangeBlock = pygame.image.load('assets/orange.png')
-yellowBlock = pygame.image.load('assets/yellow.png')
-greenBlock = pygame.image.load('assets/green.png')
-blackBlock = pygame.image.load('assets/black.png')
-
-BLOCK_RECT = cyanBlock.get_rect()
-BLOCKS_BY_INDEX = ["cyan", "purple", "magenta", "orange", "yellow", "green", "black"]
-BLOCKS_BY_NAME = {"cyan": cyanBlock, 
-                  "purple": purpleBlock, 
-                  "magenta": magentaBlock, 
-                  "orange": orangeBlock, 
-                  "yellow": yellowBlock, 
-                  "green": greenBlock,
-                  "black": blackBlock}
-
-BORDER = (SCREEN_SIZE-OUTER_CIRCLE_DIM)/2
-CENTRE = SCREEN_SIZE/2
-INTERNAL_RADIUS = (OUTER_CIRCLE_DIM/2)*0.88
-CENTRE_CIRCLE_RADIUS = math.floor(INTERNAL_RADIUS/4)
 
 brickSpeed = 500
 fireEvent = pygame.USEREVENT+1
 rotateCentreBlockEvent = pygame.USEREVENT+2
 
-def renderScore(score):
-    scoreImg = DEFAULTFONT.render("SCORE: %s" % str(score), 1, (255, 0, 128))
-    scoreRect = scoreImg.get_rect()
-    SCREEN.blit(scoreImg, (scoreRect[0]+10, scoreRect[1]+10))
+def getNewBrick(BLOCKS_BY_INDEX):
+    blockIndex = random.randint(0, 5)
+    block = BLOCKS_BY_INDEX[blockIndex]
+    return block
 
-def gridMatrix ():
-    matrix = []
-    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/18)
-    for i in range(matrixHeight):
-        matrix.append([])
-        for j in range(60):
-            matrix[i].append("black")
-    return matrix, matrixHeight
+def renderNextBrick(direction, activeBrick):
+    block = pygame.image.load('assets/%s_full.png' % activeBrick)
+    block = pygame.transform.rotate(block, direction*-6)
+    blockSize = block.get_size()
+    block = pygame.transform.smoothscale(block, (blockSize[0]*0.3, blockSize[1]*0.3))
+    adjustedBlockSize = block.get_size()
+    blockCentre = [adjustedBlockSize[0]/2, adjustedBlockSize[1]/2]
+    offsetX = (CENTRE_CIRCLE_RADIUS-adjustedBlockSize[0]-5)*getOffset(direction ,'x')
+    offsetY = (-CENTRE_CIRCLE_RADIUS+adjustedBlockSize[1]-5)*getOffset(direction, 'y')
+    SCREEN.blit(block, (CENTRE-blockCentre[0]+offsetX, CENTRE-blockCentre[1]+offsetY))
 
 def getBlockMatrix(blockName):
     if blockName == "cyan":
@@ -86,28 +57,12 @@ def getBlockMatrix(blockName):
         blockMatrix = [["black"]]
     return blockMatrix
 
-def getNewBrick():
-    blockIndex = random.randint(0, 5)
-    block = BLOCKS_BY_INDEX[blockIndex]
-    return block
-
 def getMatrixWidth(matrix):
     width = 0
     for i in range(len(matrix)):
         if len(matrix[i]) > width:
             width = len(matrix[i])
     return width
-
-def renderNextBrick(direction, activeBrick):
-    block = pygame.image.load('assets/%s_full.png' % activeBrick)
-    block = pygame.transform.rotate(block, direction*-6)
-    blockSize = block.get_size()
-    block = pygame.transform.smoothscale(block, (blockSize[0]*0.3, blockSize[1]*0.3))
-    adjustedBlockSize = block.get_size()
-    blockCentre = [adjustedBlockSize[0]/2, adjustedBlockSize[1]/2]
-    offsetX = (CENTRE_CIRCLE_RADIUS-adjustedBlockSize[0]-5)*getOffset(direction ,'x')
-    offsetY = (-CENTRE_CIRCLE_RADIUS+adjustedBlockSize[1]-5)*getOffset(direction, 'y')
-    SCREEN.blit(block, (CENTRE-blockCentre[0]+offsetX, CENTRE-blockCentre[1]+offsetY))
     
 def canBlockMove(i, direction, blockMatrix):
     checkDepth = len(blockMatrix)
@@ -163,43 +118,11 @@ def renderBlocks ():
                 SCREEN.blit(blockImg, (offsetX, offsetY))
         additionalOffset += blockRect[3]+3
 
-def checkFullLines(matrix):
-    fullLine = False
-    lineIndex = 0
-    for i in range(len(gameMatrix)):
-        for j in range(len(gameMatrix[i])):
-            if gameMatrix[i][j] == "black":
-                break
-            elif j == (len(gameMatrix[i])-1) and gameMatrix[i][j] != "black":
-                fullLine = True
-                lineIndex = i
-        if fullLine == True:
-            break
-    return fullLine, lineIndex
-
-def deleteFullLines(score):
-    fullLine, lineIndex = checkFullLines(gameMatrix)
-    if fullLine == True:
-        for i in range(lineIndex, -1, -1):
-            for j in range(len(gameMatrix[i])):
-                if i == 0:
-                    gameMatrix[i][j] = "black"
-                else:
-                    gameMatrix[i][j] = gameMatrix[i-1][j]
-        score += 60
-    return score
-
 def setRotationRate(rotationRate, score):
     if rotationRate >= 5:
         rotationRate -= math.floor(score/60)*5
     return rotationRate
 
-
-gameMatrix, MATRIX_HEIGHT = gridMatrix()
-BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*1.5, (MATRIX_HEIGHT/100)*3)
-BLOCK_OFFSET_X = CENTRE-((BLOCK_RECT[2]*BLOCK_MIN_SCALE[0])/2)
-BLOCK_OFFSET_Y = CENTRE-CENTRE_CIRCLE_RADIUS-((BLOCK_RECT[3]*BLOCK_MIN_SCALE[0]))
-MARGIN = 25
 nextBrick = False     
 
 play = True
@@ -215,12 +138,12 @@ while play:
     pygame.draw.circle(SCREEN, (0, 0, 0), (CENTRE, CENTRE), INTERNAL_RADIUS)
     pygame.draw.circle(SCREEN, (195, 33, 45), (CENTRE, CENTRE), CENTRE_CIRCLE_RADIUS)
 
-    renderScore(score)
+    renderScore(score, DEFAULTFONT, SCREEN)
     renderBlocks()
-    score = deleteFullLines(score)
+    score = deleteFullLines(score, gameMatrix)
     rotationRate = setRotationRate(rotationRate, score)
     if nextBrick == False:
-        nextBrick = getNewBrick()
+        nextBrick = getNewBrick(BLOCKS_BY_INDEX)
     else:
         renderNextBrick(directionToFire, nextBrick)
 
