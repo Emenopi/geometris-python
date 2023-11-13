@@ -66,19 +66,44 @@ def getMatrixWidth(matrix):
     return width
     
 def canBlockMove(i, direction, blockMatrix):
-    checkDepth = len(blockMatrix)
+    if i+1 < len(blockMatrix):
+        checkDepth = i+1
+    else:
+        checkDepth = len(blockMatrix)
+
     for index in range(checkDepth):
         for width in range(len(blockMatrix[index])):
-            if index == 0 and gameMatrix[i][(direction+width)%60] != "black":
-                return False
-            elif len(blockMatrix[index]) - len(blockMatrix[index-1]):
+            if blockMatrix[index][width][0] != "null":
+                if gameMatrix[i-index][(direction+width)%60] != "black" and len(gameMatrix[i-index][(direction+width)%60]) > 2:
+                    return False
+            elif len(blockMatrix[index]) < len(blockMatrix[index-1]):
                 checkWidth = len(blockMatrix[index]) - len(blockMatrix[index-1])
                 for w in range(1, checkWidth):
                     if gameMatrix[i-index][direction+w] != "black":
                         return False
     return True
 
+def tagMovingBrick(blockMatrix):
+    for i in range(len(blockMatrix)):
+        for j in range(len(blockMatrix[i])):
+            if len(blockMatrix[i][j]) > 2:
+                blockMatrix[i][j] = [blockMatrix[i][j], "moving"]
+    return blockMatrix
+
+def removeBrickTag(gameMatrix):
+    for i in range(len(gameMatrix)):
+        for width in range (len(gameMatrix[i])):
+            if len(gameMatrix[i][width]) <= 2:
+                gameMatrix[i][width] = gameMatrix[i][width][0]
+
+def removeNullBricks(direction, gameMatrix):
+    for i in range(len(gameMatrix)):
+        for width in range(len(gameMatrix[i][direction]), 5):
+            if gameMatrix[i][(direction + width)%60]  == "null":
+                gameMatrix[i][(direction + width)%60] = "black"
+
 def moveBrick(i, direction, blockMatrix):
+    blockMatrix = tagMovingBrick(blockMatrix)
     if i+1 < len(blockMatrix):
         iterations = i+1
     else:
@@ -88,7 +113,7 @@ def moveBrick(i, direction, blockMatrix):
         for widthIndex in range(len(blockMatrix[index])): 
             if (i - index - 1) >= 0:
                 gameMatrix[i-index-1][(direction+widthIndex)%60] = "black"
-            if blockMatrix[index][widthIndex] != "null":
+            if blockMatrix[index][widthIndex][0] != "null":
                 gameMatrix[i-index][(direction+widthIndex)%60] = blockMatrix[index][widthIndex]
 
 def getOffset(n, dim):
@@ -106,7 +131,13 @@ def renderBlocks ():
         centerOffset = CENTRE_CIRCLE_RADIUS+MARGIN+additionalOffset
         scaleFactor = ((i+1)/8, (i+1)/60)
         for j in range(len(gameMatrix[i])):
-                currentBlock = BLOCKS_BY_NAME[gameMatrix[i][j]]
+                if len(gameMatrix[i][j]) <= 2:
+                    if gameMatrix[i][j][0] == "null":
+                        currentBlock = blackBlock
+                    else:
+                        currentBlock = BLOCKS_BY_NAME[gameMatrix[i][j][0]]
+                else:
+                    currentBlock = BLOCKS_BY_NAME[gameMatrix[i][j]]
                 blockImg = pygame.transform.smoothscale(currentBlock, (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
                 blockRect = blockImg.get_rect()
                 blockImg = pygame.transform.rotate(blockImg, j*-6)
@@ -125,30 +156,38 @@ def setRotationRate(rotationRate, score):
         rotationRate -= math.floor(score/60)*5
     return rotationRate
 
-def rotateMovingBlock(blockMatrix):
-    canRotate = True
+def rotateMovingBlock(index, direction, blockMatrix):
+    rotatedBlockMatrix = list(zip(*blockMatrix[::-1]))
+    for i in range(len(rotatedBlockMatrix)):
+        rotatedBlockMatrix[i] = list(rotatedBlockMatrix[i])
+    # Ensure block starts at 0th index
+    for iteration in range(2):
+        #move left
+        if rotatedBlockMatrix[0][0][0] == "null" and rotatedBlockMatrix[1][0][0] == "null" and rotatedBlockMatrix[2][0][0] == "null":
+            for i in range(len(rotatedBlockMatrix)):
+                for w in range(len(rotatedBlockMatrix[i])):
+                    if w == len(rotatedBlockMatrix[i])-1:
+                        rotatedBlockMatrix[i][w][0] = "null"
+                    else:
+                        rotatedBlockMatrix[i][w][0] = rotatedBlockMatrix[i][w+1][0]
+        #move up
+        if rotatedBlockMatrix[0][0][0] == "null" and rotatedBlockMatrix[1][0][0] == "null" and rotatedBlockMatrix[2][0][0] == "null":
+            for i in range(1, len(rotatedBlockMatrix)):
+                for w in range(len(rotatedBlockMatrix[i])):
+                    rotatedBlockMatrix[i-1][w][0] = rotatedBlockMatrix[i][w][0]
+    canRotate = canBlockRotate(index, direction, rotatedBlockMatrix, blockMatrix)
     if canRotate:
-        rotatedBlock = list(zip(*blockMatrix[::-1]))
-        for i in range(len(rotatedBlock)):
-            rotatedBlock[i] = list(rotatedBlock[i])
-        # Ensure block starts at 0th index
-        for iteration in range(2):
-            #move left
-            if rotatedBlock[0][0] == "null" and rotatedBlock[1][0] == "null" and rotatedBlock[2][0] == "null":
-                for i in range(len(rotatedBlock)):
-                    for w in range(len(rotatedBlock[i])):
-                        if w == len(rotatedBlock[i])-1:
-                            rotatedBlock[i][w] = "null"
-                        else:
-                            rotatedBlock[i][w] = rotatedBlock[i][w+1]
-            #move up
-            if rotatedBlock[0][0] == "null" and rotatedBlock[1][0] == "null" and rotatedBlock[2][0] == "null":
-                for i in range(1, len(rotatedBlock)):
-                    for w in range(len(rotateCentreBlockEvent[i])):
-                        rotatedBlock[i-1][w] = rotatedBlock[i][w]
-        return rotatedBlock
+        return rotatedBlockMatrix
     return blockMatrix
-        
+
+def canBlockRotate(i, direction, rotatedMatrix, originalBlock):
+    for index in range(len(rotatedMatrix)):
+        for widthIndex in range(len(rotatedMatrix[index])):
+            if gameMatrix[i-index][(direction+widthIndex)%60] != "black" and rotatedMatrix[index][widthIndex] != "null":
+                if len(gameMatrix[i-index][(direction+widthIndex)%60]) > 2:
+                    return False
+    return True
+
     
 nextBrick = False     
 
@@ -194,9 +233,11 @@ while play:
                 moveBrick(index, directionToFire, blockMatrix)
             index += 1
             if index >= len(gameMatrix) or not canMove:
+                removeBrickTag(gameMatrix)
+                removeNullBricks(directionToFire, gameMatrix)
                 index = 0
                 blockIsMoving = False
-                pygame.time.set_timer(fireEvent, 0)            
+                pygame.time.set_timer(fireEvent, 0)         
             renderBlocks()
         if event.type == rotateCentreBlockEvent and not blockIsMoving:
             directionToFire += 1
@@ -206,7 +247,7 @@ while play:
             pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 60)
         if event.type == KEYDOWN and event.key == K_d and blockIsMoving:
             if movingBrick != "cyan" and movingBrick != "magenta":
-                blockMatrix = rotateMovingBlock(blockMatrix)
+                blockMatrix = rotateMovingBlock(index, directionToFire, blockMatrix)
 
     pygame.display.flip()
 
