@@ -188,6 +188,20 @@ def canBlockRotate(i, direction, rotatedMatrix, originalBlock):
                     return False
     return True
 
+def increaseDirection(direction, index, blockMatrix):
+    for i in range(len(blockMatrix)):
+        gameMatrix[index-i][direction] = "black"
+    newDirection = direction + 1
+    return newDirection
+
+def decreaseDirection(direction, index, blockMatrix):
+    for i in range(len(blockMatrix)):
+        widthToDelete = len(blockMatrix[i])-1
+        if widthToDelete < 1:
+            widthToDelete = 1
+        gameMatrix[index-i][direction+widthToDelete] = "black"
+    newDirection = direction - 1
+    return newDirection
     
 nextBrick = False     
 
@@ -248,6 +262,12 @@ while play:
         if event.type == KEYDOWN and event.key == K_SPACE and blockIsMoving:
             if movingBrick != "cyan" and movingBrick != "magenta":
                 blockMatrix = rotateMovingBlock(index, directionToFire, blockMatrix)
+        if event.type == KEYDOWN and (event.key == K_LEFT or event.key == K_a) and blockIsMoving:
+            directionToFire = decreaseDirection(directionToFire, index, blockMatrix)
+        if event.type == KEYDOWN and (event.key == K_RIGHT or event.key == K_d) and blockIsMoving:
+            directionToFire = increaseDirection(directionToFire, index, blockMatrix)
+        if event.type == KEYDOWN and event.key == K_RETURN and blockIsMoving:
+            index += 1
 
     pygame.display.flip()
 
