@@ -245,7 +245,7 @@ while play:
                 directionToFire = 0
             pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 0)
             pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 60)
-        if event.type == KEYDOWN and event.key == K_d and blockIsMoving:
+        if event.type == KEYDOWN and event.key == K_SPACE and blockIsMoving:
             if movingBrick != "cyan" and movingBrick != "magenta":
                 blockMatrix = rotateMovingBlock(index, directionToFire, blockMatrix)
 
