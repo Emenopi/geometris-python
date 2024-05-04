@@ -210,13 +210,13 @@ def decreaseDirection(direction, index, blockMatrix):
     newDirection = direction - 1
     return newDirection
     
-
 nextBrick = False     
 
 play = True
 blockIsMoving = False
 rotationRate = 1000
 directionToFire = 0
+gameMatrix = gameMatrix.getMatrix()
 pygame.time.set_timer(rotateCentreBlockEvent, rotationRate, 60)
 
 while play:

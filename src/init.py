@@ -2,6 +2,8 @@ import pygame
 from pygame.locals import *
 import math
 
+from gameMatrix import GameMatrix
+
 SCREEN_SIZE = 900
 OUTER_CIRCLE_DIM = SCREEN_SIZE*0.91
 SCREEN = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))
@@ -32,16 +34,7 @@ BLOCKS_BY_NAME = {"cyan": cyanBlock,
                   "green": greenBlock,
                   "black": blackBlock}
 
-
-def gridMatrix ():
-    matrix = []
-    matrixHeight = math.floor((INTERNAL_RADIUS - CENTRE_CIRCLE_RADIUS)/18)
-    for i in range(matrixHeight):
-        matrix.append([])
-        for j in range(60):
-            matrix[i].append("black")
-    return matrix, matrixHeight
-
-gameMatrix, MATRIX_HEIGHT = gridMatrix()
+gameMatrix = GameMatrix(INTERNAL_RADIUS, CENTRE_CIRCLE_RADIUS)
+MATRIX_HEIGHT = gameMatrix.getHeight()
 BLOCK_MIN_SCALE = ((MATRIX_HEIGHT/100)*1.5, (MATRIX_HEIGHT/100)*3)
 MARGIN = 25
