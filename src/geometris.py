@@ -115,6 +115,12 @@ def moveBrick(i, direction, blockMatrix):
                 gameMatrix[i-index-1][(direction+widthIndex)%60] = "black"
             if blockMatrix[index][widthIndex][0] != "null":
                 gameMatrix[i-index][(direction+widthIndex)%60] = blockMatrix[index][widthIndex]
+    if (i - iterations) > 0:
+        endPoint = i - iterations
+        for h in range(endPoint):
+            for w in range(len(blockMatrix[0])):
+                if len(gameMatrix[h][w]) == 2:
+                    gameMatrix[h][w] = "black"
 
 def getOffset(n, dim):
     num = (n*6)*(math.pi/180)
@@ -140,6 +146,7 @@ def renderBlocks ():
                     currentBlock = BLOCKS_BY_NAME[gameMatrix[i][j]]
                 blockImg = pygame.transform.smoothscale(currentBlock, (minScale[0]+(minScale[0]*scaleFactor[0]), minScale[0]+(minScale[1]*scaleFactor[1])))
                 blockRect = blockImg.get_rect()
+                
                 blockImg = pygame.transform.rotate(blockImg, j*-6)
                 blockRectRotated = blockImg.get_rect()
 
@@ -203,6 +210,7 @@ def decreaseDirection(direction, index, blockMatrix):
     newDirection = direction - 1
     return newDirection
     
+
 nextBrick = False     
 
 play = True
@@ -267,7 +275,8 @@ while play:
         if event.type == KEYDOWN and (event.key == K_RIGHT or event.key == K_d) and blockIsMoving:
             directionToFire = increaseDirection(directionToFire, index, blockMatrix)
         if event.type == KEYDOWN and event.key == K_RETURN and blockIsMoving:
-            index += 1
+            if index < 14:
+                index += 1
 
     pygame.display.flip()
 
